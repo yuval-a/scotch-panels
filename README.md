@@ -10,6 +10,12 @@ scotchPanels.js is a jQuery plugin for easily creating [off canvas](http://scotc
 
 ***
 
+## Modifications in this fork
+This fork includes support for "overlay" panels, where content stay fixed "behind" an opened panel.
+To use it, you need to give a **sibling** element of your panel the class-name `scotch-fixed` -
+onced the panel is opened or closed, that element will stay "fixed" and won't be "pushed" by the panel.
+It works by implementing a similar translation/animation to the panel, only to the opposite direction,
+at the same time; this creates a seemingly fixed element behind the panel.
 
 
 ## Licenses

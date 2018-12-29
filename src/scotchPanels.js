@@ -1,3 +1,10 @@
+/*
+* scotchPanels - v1.0.3 - 2014-09-25
+* https://github.com/scotch-io/scotch-panels
+* modified fork to support overlay panels:
+* https://github.com/yuval-a/scotch-panels
+* Copyright (c) 2014 Nicholas Cerminara <nick@scotch.io>
+*/
 // Start with Semicolon to block
 ;(function($) {
 
@@ -366,11 +373,42 @@
                 '-webkit-transition': 'all '+duration+'ms '+transition,
                 'transition': 'all '+duration+'ms '+transition
             });
+
+            var fixed = panel.siblings('.scotch-fixed');
+            if (fixed.length) {
+                fixed.css({
+                    '-ms-transition': 'all '+duration+'ms '+transition,
+                    '-moz-transition': 'all '+duration+'ms '+transition,
+                    '-o-transition': 'all '+duration+'ms '+transition,
+                    '-webkit-transition': 'all '+duration+'ms '+transition,
+                    'transition': 'all '+duration+'ms '+transition
+                });                
+            }
+
         };
+
+        // Always return a number (translateY adds 'px')
+        var getOppositeDistanceY = function(distanceY) {
+            distanceY = parseInt(distanceY);
+            if (distanceY == 0) return 0;
+            distanceY = ( distanceY>0 ? -(distanceY) : Math.abs(distanceY) );
+            return distanceY;
+        }
+
+        // Always return a string (usually uses % in translateX)
+        var getOppositeDistanceX = function(distanceX) {
+            if (distanceX == 0) return 0;
+            var postfix;
+            if (distanceX.indexOf('%')) postfix = '%';
+            else if (distanceX.indexOf('px')) postfix = 'px';
+            distanceX = parseInt(distanceX);
+            distanceX = ( distanceX>0 ? -(distanceX) : Math.abs(distanceX) );
+            distanceX += postfix;
+            return distanceX;
+        }
 
         // Toggle Translate Y
         var translateY = function(distanceY) {
-
             // Auto adapt height if unknown and enabled
             if (panel.settings.forceMinHeight) {
                 panel.parents('.scotch-panel-canvas:first').css('min-height', distanceY);
@@ -392,6 +430,18 @@
                     '-webkit-transform': 'translate3d(0, '+distanceY+'px, 0)',
                     'transform': 'translate3d(0, '+distanceY+'px, 0)'
                 });
+
+                var fixed = panel.siblings('.scotch-fixed');
+                if (fixed.length) {
+                    distanceY = getOppositeDistanceY(distanceY);
+                    fixed.css({
+                        '-ms-transform': 'translate3d(0, '+distanceY+'px, 0)',
+                        '-moz-transform': 'translate3d(0, '+distanceY+'px, 0)',
+                        '-o-transform': 'translate3d(0, '+distanceY+'px, 0)',
+                        '-webkit-transform': 'translate3d(0, '+distanceY+'px, 0)',
+                        'transform': 'translate3d(0, '+distanceY+'px, 0)'
+                    });
+                }
 
                 setTimeout(function(){
 
@@ -433,6 +483,29 @@
                         }
                     });
 
+                    var fixed = panel.siblings('.scotch-fixed');
+                    if (fixed.length) {
+                        distanceY = getOppositeDistanceY(distanceY);
+                        fixed.animate({
+                            top: distanceY+'px'
+                        }, {
+                            duration: panel.settings.duration,
+                            easing: panel.settings.easingPluginTransition
+                            /*
+                            complete: function() {
+                                // Open/Close After Callbacks (JS EASE)
+                                if (panel.parents('.scotch-panel-canvas:first').hasClass('scotch-is-showing')) {
+                                    panel.settings.afterPanelOpen();
+                                } else {
+                                    panel.settings.afterPanelClose();
+                                }
+                            }
+                            */
+                        });
+                    }
+    
+                        
+
                 } else {
 
                     panel.parents('.scotch-panel-canvas:first').animate({
@@ -445,8 +518,16 @@
                         } else {
                             panel.settings.afterPanelClose();
                         }
-
                     });
+
+                    var fixed = panel.siblings('.scotch-fixed');
+                    if (fixed.length) {
+                        distanceY = getOppositeDistanceY(distanceY);
+                        fixed.animate({
+                            top: distanceY+'px'
+                        }, panel.settings.duration);
+                    }
+                    
 
                 }
             }
@@ -471,6 +552,18 @@
                     '-webkit-transform': 'translate3d('+distanceX+', 0, 0)',
                     'transform': 'translate3d('+distanceX+', 0, 0)'
                 });
+                var fixed = panel.siblings('.scotch-fixed');
+                if (fixed.length) {
+                    distanceX = getOppositeDistanceX(distanceX);
+                    fixed.css({
+                        '-ms-transform': 'translate3d('+distanceX+', 0, 0)',
+                        '-moz-transform': 'translate3d('+distanceX+', 0, 0)',
+                        '-o-transform': 'translate3d('+distanceX+', 0, 0)',
+                        '-webkit-transform': 'translate3d('+distanceX+', 0, 0)',
+                        'transform': 'translate3d('+distanceX+', 0, 0)'
+                    });
+                }
+                    
 
                 setTimeout(function() {
 
@@ -511,6 +604,17 @@
                         }
                     });
 
+                    var fixed = panel.siblings('.scotch-fixed');
+                    if (fixed.length) {
+                        distanceX = getOppositeDistanceX(distanceX);
+                        fixed.animate({
+                            left: distanceX
+                        }, {
+                            duration: panel.settings.duration,
+                            easing: panel.settings.easingPluginTransition,
+                        });
+                    }
+
                 } else {
 
                     panel.parents('.scotch-panel-canvas:first').animate({
@@ -525,6 +629,14 @@
                         }
 
                     });
+
+                    var fixed = panel.siblings('.scotch-fixed');
+                    if (fixed.length) {
+                        distanceX = getOppositeDistanceX(distanceX);
+                        panel.parents('.scotch-panel-canvas:first').animate({
+                            left: distanceX
+                        }, panel.settings.duration);
+                    }
 
                 }
             }
@@ -630,7 +742,6 @@
         if (panel.settings.clickSelector) {
             $(panel.settings.clickSelector).click(function () {
                 panel.toggle();
-
                 return false;
             });
         }
@@ -639,7 +750,6 @@
         if (panel.settings.touchSelector) {
             $(panel.settings.touchSelector).on('touchstart', function () {
                 panel.toggle();
-
                 return false;
             });
         }
